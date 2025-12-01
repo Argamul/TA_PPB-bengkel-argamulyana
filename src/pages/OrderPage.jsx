@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, Loader, Trash2, CreditCard, MapPin } from "lucide-react";
 
-export default function OrderPage({ onBack }) {
+export default function OrderPage({ onNavigate, onBack }) {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
 

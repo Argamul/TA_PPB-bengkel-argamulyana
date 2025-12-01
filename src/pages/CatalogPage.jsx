@@ -1,7 +1,7 @@
 // src/pages/CatalogPage.jsx
 import { useState, useEffect } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
-import PartCard from "../components/cards/PartCard";
+import PartCard from "../components/cards/PartsCard";
 
 export default function CatalogPage({ onNavigate }) {
   const [parts, setParts] = useState([]);
@@ -14,8 +14,10 @@ export default function CatalogPage({ onNavigate }) {
   }, []);
 
   const filteredParts = parts.filter((p) => {
-    const matchSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchCategory = categoryFilter === "all" || p.category === categoryFilter;
+    const partName = (p.part_name || p.name || "").toString();
+    const partCategory = (p.category || p.type || "").toString();
+    const matchSearch = partName.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchCategory = categoryFilter === "all" || partCategory === categoryFilter;
     return matchSearch && matchCategory;
   });
 

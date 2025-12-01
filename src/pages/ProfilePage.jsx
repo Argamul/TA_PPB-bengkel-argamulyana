@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Upload, Save, User as UserIcon } from 'lucide-react';
 import { getUserProfile, updateAvatar, updateUsername, updateBio, saveUserProfile } from '../services/userService';
 
-export default function ProfilePage() {
+export default function ProfilePage({ onNavigate }) {
   const [profile, setProfile] = useState({
     username: '',
     avatar: '',
