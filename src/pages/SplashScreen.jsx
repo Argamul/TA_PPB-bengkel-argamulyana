@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion } from '@motionone/react';
 import { Wrench } from 'lucide-react';
 
 export default function SplashScreen() {
