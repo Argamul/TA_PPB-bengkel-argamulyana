@@ -1,7 +1,7 @@
 // src/pages/EditPartPage.jsx
 import { useState, useEffect } from "react";
 import { ArrowLeft, Upload, X, Loader, Image as ImageIcon } from "lucide-react";
-import partService from "../services/partService";
+// import partService from "../services/partService"; // Service does not exist - disabled
 import uploadService from "../services/uploadService";
 
 export default function EditPartPage({ partId, onBack, onSuccess }) {
@@ -26,24 +26,10 @@ export default function EditPartPage({ partId, onBack, onSuccess }) {
     const loadPart = async () => {
       try {
         setLoading(true);
-        const result = await partService.getPartById(partId);
-
-        if (result.success) {
-          const part = result.data;
-          setFormData({
-            name: part.name || "",
-            category: part.category || "mesin",
-            description: part.description || "",
-            price: part.price || "",
-          });
-
-          setCurrentImageUrl(part.image || "");
-        } else {
-          throw new Error("Gagal memuat data sparepart");
-        }
+        // partService does not exist - TODO: implement proper Supabase query
+        throw new Error("Part service not implemented. Please load parts from Supabase.");
       } catch (err) {
         setError(err.message || "Terjadi kesalahan saat memuat sparepart");
-      } finally {
         setLoading(false);
       }
     };

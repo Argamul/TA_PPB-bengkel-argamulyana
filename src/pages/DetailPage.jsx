@@ -1,7 +1,7 @@
 // src/pages/DetailPage.jsx
 import { useState, useEffect } from "react";
 import { ArrowLeft, Star, ShoppingCart } from "lucide-react";
-import { useWishlist } from "../hooks/useWishlist";
+import { useWishlist } from "../hooks/useToggleWishlist";
 
 export default function DetailPage({ partId, onNavigate }) {
   const [part, setPart] = useState(null);
