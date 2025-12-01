@@ -1,8 +1,8 @@
-// src/components/home/FeaturedMobilSection.jsx
-import { Clock, Star, Car } from 'lucide-react';
+// src/components/home/FeaturedKeretaSection.jsx
+import { Clock, Star, TrainFront } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
-export default function FeaturedMobilSection({ featuredMobil }) {
+export default function FeaturedKeretaSection({ featuredKereta }) {
   const [visible, setVisible] = useState(new Set());
   const itemRefs = useRef([]);
 
@@ -16,7 +16,7 @@ export default function FeaturedMobilSection({ featuredMobil }) {
           }, index * 200);
         }
       });
-    });
+    }, { threshold: 0.1 });
 
     itemRefs.current.forEach((ref, index) => {
       if (ref) {
@@ -31,12 +31,12 @@ export default function FeaturedMobilSection({ featuredMobil }) {
   return (
     <section>
       <div className="flex items-center justify-between mb-6 md:mb-8">
-        <h2 className="text-xl md:text-3xl font-bold text-slate-800">Mobil</h2>
+        <h2 className="text-xl md:text-3xl font-bold text-slate-800">Kereta</h2>
         <button className="text-slate-500 hover:text-slate-600 text-xs md:text-sm hover:underline">Lihat Semua</button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-        {featuredMobil.map((item, index) => (
+        {featuredKereta.map((item, index) => (
           <div
             key={item.id}
             ref={el => itemRefs.current[index] = el}
@@ -44,26 +44,30 @@ export default function FeaturedMobilSection({ featuredMobil }) {
               visible.has(index) ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
             }`}
           >
-            <div className="relative bg-white/15 backdrop-blur-xl border border-white/25 rounded-2xl overflow-hidden shadow-lg cursor-pointer group-hover:scale-105 transition-all duration-500">
+            <div className="relative bg-white/15 backdrop-blur-xl border border-white/25 rounded-2xl md:rounded-3xl overflow-hidden shadow-lg md:shadow-2xl cursor-pointer group-hover:scale-105 transition-all duration-500">
 
-              <div className="h-32 md:h-56 overflow-hidden">
+              <div className="relative h-32 md:h-56 overflow-hidden">
                 <img src={item.image_url} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
               </div>
 
               <div className="p-4 md:p-8">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 py-1 rounded-full">Mobil</span>
+                <div className="flex items-center justify-between mb-3 md:mb-4">
+                  <span className="text-xs font-semibold text-blue-700 bg-blue-100 px-2 py-1 rounded-full">
+                    Kereta
+                  </span>
                   <div className="flex items-center space-x-1 bg-white px-2 py-1 rounded-full">
                     <Star className="w-3 h-3 text-yellow-500" />
-                    <span className="text-xs font-semibold">4.8</span>
+                    <span className="text-xs md:text-sm font-semibold text-slate-700">4.8</span>
                   </div>
                 </div>
 
-                <h3 className="font-bold text-slate-800 mb-3 text-base md:text-xl group-hover:text-blue-600">{item.name}</h3>
+                <h3 className="font-bold text-slate-800 mb-4 text-base md:text-xl group-hover:text-blue-600">
+                  {item.name}
+                </h3>
 
                 <div className="flex items-center text-xs md:text-sm text-slate-600">
-                  <Car className="w-4 h-4 mr-2" />
-                  <span className="font-medium">{item.features.length} fitur</span>
+                  <TrainFront className="w-4 h-4 mr-2" />
+                  <span className="font-medium">{item.routes.length} rute tersedia</span>
                 </div>
 
               </div>

@@ -1,7 +1,19 @@
+import { useEffect } from 'react';
 import { motion } from '@motionone/react';
 import { Wrench } from 'lucide-react';
 
-export default function SplashScreen() {
+export default function SplashScreen({ onComplete }) {
+  useEffect(() => {
+    // Trigger completion after 3 seconds total animation time
+    const timer = setTimeout(() => {
+      if (onComplete) {
+        onComplete();
+      }
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [onComplete]);
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0A1A3F] via-[#0d2154] to-[#0A1A3F]">
       <div className="text-center">
