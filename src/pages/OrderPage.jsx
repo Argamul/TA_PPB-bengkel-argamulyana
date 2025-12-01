@@ -1,145 +1,261 @@
-// src/pages/OrderPage.jsx
-import { useState, useEffect } from "react";
-import { ArrowLeft, Loader, Trash2, CreditCard, MapPin } from "lucide-react";
+import { useState } from 'react';
+import { ArrowLeft, Package, Truck, CheckCircle, Clock, XCircle, Search, Eye } from 'lucide-react';
 
-export default function OrderPage({ onNavigate, onBack }) {
-  const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
+export default function OrderPage({ navigateTo }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
 
-  const [address, setAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("Transfer Bank");
+  // Mock order data
+  const orders = [
+    {
+      id: 'ORD-2024-001',
+      date: '2024-11-28',
+      status: 'delivered',
+      total: 3248.50,
+      items: [
+        {
+          name: 'Premium Turbocharger Assembly',
+          manufacturer: 'Toyota',
+          quantity: 2,
+          price: 1299,
+          image: 'https://images.unsplash.com/photo-1664695221759-21ed7295f697?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=200',
+        },
+        {
+          name: 'Advanced Brake System Kit',
+          manufacturer: 'Honda',
+          quantity: 1,
+          price: 449,
+          image: 'https://images.unsplash.com/photo-1762012507780-060fe0bcc783?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=200',
+        },
+      ],
+      tracking: 'TRK-998877665544',
+      shippingAddress: '123 Workshop Street, Motor City, MC 12345',
+    },
+    {
+      id: 'ORD-2024-002',
+      date: '2024-11-30',
+      status: 'processing',
+      total: 5499,
+      items: [
+        {
+          name: 'Heavy-Duty Transmission',
+          manufacturer: 'Mercedes-Benz',
+          quantity: 1,
+          price: 5499,
+          image: 'https://images.unsplash.com/photo-1675798941648-5ddbddcbb9fb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=200',
+        },
+      ],
+      tracking: 'TRK-112233445566',
+      shippingAddress: '123 Workshop Street, Motor City, MC 12345',
+    },
+    {
+      id: 'ORD-2024-003',
+      date: '2024-12-01',
+      status: 'shipped',
+      total: 2899,
+      items: [
+        {
+          name: 'V8 Engine Rebuild Kit',
+          manufacturer: 'Ford',
+          quantity: 1,
+          price: 2899,
+          image: 'https://images.unsplash.com/photo-1762139258224-236877b2c571?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=200',
+        },
+      ],
+      tracking: 'TRK-334455667788',
+      shippingAddress: '123 Workshop Street, Motor City, MC 12345',
+    },
+  ];
 
-  // get cart items
-  useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCartItems(storedCart);
-    setLoading(false);
-  }, []);
-
-  const removeItem = (id) => {
-    const updated = cartItems.filter((item) => item.id !== id);
-    setCartItems(updated);
-    localStorage.setItem("cart", JSON.stringify(updated));
+  const statusConfig = {
+    processing: {
+      label: 'Processing',
+      icon: Clock,
+      color: 'bg-blue-100 text-blue-700 border-blue-200',
+      iconColor: 'text-blue-600',
+    },
+    shipped: {
+      label: 'Shipped',
+      icon: Truck,
+      color: 'bg-purple-100 text-purple-700 border-purple-200',
+      iconColor: 'text-purple-600',
+    },
+    delivered: {
+      label: 'Delivered',
+      icon: CheckCircle,
+      color: 'bg-green-100 text-green-700 border-green-200',
+      iconColor: 'text-green-600',
+    },
+    cancelled: {
+      label: 'Cancelled',
+      icon: XCircle,
+      color: 'bg-red-100 text-red-700 border-red-200',
+      iconColor: 'text-red-600',
+    },
   };
 
-  const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + item.price * item.qty, 0);
-  };
-
-  const handleOrder = () => {
-    if (!address.trim()) {
-      alert("Alamat tidak boleh kosong");
-      return;
-    }
-
-    alert("Pesanan berhasil dibuat!");
-    localStorage.removeItem("cart");
-    setCartItems([]);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader className="w-10 h-10 animate-spin text-blue-600" />
-      </div>
+  const filteredOrders = orders
+    .filter(order => filterStatus === 'all' || order.status === filterStatus)
+    .filter(order => 
+      order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.items.some(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
     );
-  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-24">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="sticky top-0 bg-white border-b shadow-sm p-4 flex items-center gap-2">
-        <button onClick={onBack} className="text-slate-700 hover:text-slate-900">
-          <ArrowLeft className="w-6 h-6" />
-        </button>
-        <h1 className="text-xl font-semibold text-slate-800">Konfirmasi Pesanan</h1>
-      </div>
-
-      <main className="max-w-3xl mx-auto p-4">
-        {/* Cart List */}
-        <div className="bg-white rounded-2xl shadow-md p-4 mb-6">
-          <h2 className="text-lg font-semibold text-slate-800 mb-4">Daftar Produk</h2>
-
-          {cartItems.length === 0 ? (
-            <p className="text-slate-500 text-center">Keranjang kosong</p>
-          ) : (
-            cartItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between border-b last:border-b-0 pb-3 mb-3"
-              >
-                <div className="flex items-center gap-4">
-                  <img
-                    src={item.image}
-                    alt={item.name}
-                    className="w-16 h-16 rounded-lg object-cover border"
-                  />
-                  <div>
-                    <h3 className="font-medium text-slate-800">{item.name}</h3>
-                    <p className="text-sm text-slate-600">
-                      Qty: {item.qty} | Rp {item.price.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => removeItem(item.id)}
-                  className="text-red-600 hover:bg-red-50 p-2 rounded-lg"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Address */}
-        <div className="bg-white rounded-2xl shadow-md p-4 mb-6">
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
-            <MapPin className="w-5 h-5" /> Alamat Pengiriman
-          </h2>
-          <textarea
-            className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
-            placeholder="Tulis alamat lengkap..."
-            rows={3}
-            value={address}
-            onChange={(e) => setAddress(e.target.value)}
-          />
-        </div>
-
-        {/* Payment */}
-        <div className="bg-white rounded-2xl shadow-md p-4 mb-6">
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-slate-800 mb-3">
-            <CreditCard className="w-5 h-5" /> Metode Pembayaran
-          </h2>
-
-          <select
-            className="w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500"
-            value={paymentMethod}
-            onChange={(e) => setPaymentMethod(e.target.value)}
-          >
-            <option>Transfer Bank</option>
-            <option>COD (Bayar di Tempat)</option>
-            <option>E-Wallet (Dana, OVO, Gopay)</option>
-          </select>
-        </div>
-
-        {/* Summary */}
-        <div className="bg-blue-600 text-white rounded-2xl p-5 shadow-lg">
-          <div className="flex justify-between text-lg font-semibold mb-2">
-            <span>Total Pembayaran</span>
-            <span>Rp {calculateTotal().toLocaleString()}</span>
+      <header className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => navigateTo('home')}
+              className="flex items-center gap-2 text-[#0A1A3F] hover:text-[#FF7A00] transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6" />
+              <span>Back</span>
+            </button>
+            <h1 className="text-[#0A1A3F]">My Orders</h1>
           </div>
 
-          <button
-            onClick={handleOrder}
-            disabled={cartItems.length === 0}
-            className="mt-4 w-full bg-white text-blue-600 py-3 rounded-xl font-semibold hover:bg-slate-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Buat Pesanan
-          </button>
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search orders..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-slate-50 rounded-[20px] border-2 border-transparent focus:border-[#FF7A00] focus:bg-white outline-none transition-all"
+            />
+          </div>
         </div>
-      </main>
+      </header>
+
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Filter Tabs */}
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+          {['all', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
+            <button
+              key={status}
+              onClick={() => setFilterStatus(status)}
+              className={`px-6 py-2 rounded-[20px] capitalize whitespace-nowrap transition-all ${
+                filterStatus === status
+                  ? 'bg-[#FF7A00] text-white shadow-md'
+                  : 'bg-white text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              {status === 'all' ? 'All Orders' : status}
+            </button>
+          ))}
+        </div>
+
+        {/* Orders List */}
+        {filteredOrders.length > 0 ? (
+          <div className="space-y-6">
+            {filteredOrders.map((order) => {
+              const status = statusConfig[order.status];
+              const StatusIcon = status.icon;
+
+              return (
+                <div key={order.id} className="bg-white rounded-[20px] shadow-sm hover:shadow-lg transition-all overflow-hidden">
+                  {/* Order Header */}
+                  <div className="p-6 border-b-2 border-slate-100">
+                    <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                      <div>
+                        <h3 className="text-[#0A1A3F] mb-1">Order {order.id}</h3>
+                        <p className="text-sm text-slate-600">Placed on {new Date(order.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                      </div>
+                      
+                      <div className={`flex items-center gap-2 px-4 py-2 rounded-[12px] border-2 ${status.color}`}>
+                        <StatusIcon className={`w-5 h-5 ${status.iconColor}`} />
+                        <span>{status.label}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm text-slate-600 mb-1">Total Amount</p>
+                        <p className="text-2xl text-[#FF7A00]">${order.total.toFixed(2)}</p>
+                      </div>
+                      
+                      {order.tracking && (
+                        <div>
+                          <p className="text-sm text-slate-600 mb-1">Tracking Number</p>
+                          <p className="text-[#0A1A3F] font-mono">{order.tracking}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Order Items */}
+                  <div className="p-6">
+                    <h4 className="text-[#0A1A3F] mb-4">Order Items</h4>
+                    <div className="space-y-4">
+                      {order.items.map((item, index) => (
+                        <div key={index} className="flex gap-4 p-4 bg-slate-50 rounded-[12px]">
+                          <div className="w-20 h-20 bg-white rounded-[12px] flex-shrink-0 overflow-hidden">
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h5 className="text-[#0A1A3F] mb-1 truncate">{item.name}</h5>
+                            <p className="text-sm text-slate-600 mb-2">{item.manufacturer}</p>
+                            <div className="flex items-center gap-4">
+                              <p className="text-sm text-slate-600">Qty: {item.quantity}</p>
+                              <p className="text-[#FF7A00]">${item.price.toLocaleString()}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Shipping Address */}
+                    <div className="mt-6 p-4 bg-slate-50 rounded-[12px]">
+                      <p className="text-sm text-slate-600 mb-2">Shipping Address</p>
+                      <p className="text-[#0A1A3F]">{order.shippingAddress}</p>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="mt-6 flex gap-4">
+                      {order.status === 'shipped' && (
+                        <button className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#FF7A00] hover:bg-[#ff8a1a] text-white rounded-[12px] transition-all">
+                          <Truck className="w-5 h-5" />
+                          Track Order
+                        </button>
+                      )}
+                      {order.status === 'delivered' && (
+                        <button className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#0A1A3F] hover:bg-[#0d2154] text-white rounded-[12px] transition-all">
+                          <Package className="w-5 h-5" />
+                          Reorder
+                        </button>
+                      )}
+                      <button className="flex items-center justify-center gap-2 px-6 py-3 border-2 border-[#0A1A3F] text-[#0A1A3F] hover:bg-[#0A1A3F] hover:text-white rounded-[12px] transition-all">
+                        <Eye className="w-5 h-5" />
+                        View Details
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-16 bg-white rounded-[20px]">
+            <Package className="w-24 h-24 text-slate-300 mx-auto mb-6" />
+            <h2 className="text-[#0A1A3F] mb-3">No orders found</h2>
+            <p className="text-slate-600 mb-8">You haven't placed any orders yet</p>
+            <button
+              onClick={() => navigateTo('catalog')}
+              className="bg-[#FF7A00] hover:bg-[#ff8a1a] text-white px-8 py-4 rounded-[20px] shadow-lg transition-all"
+            >
+              Start Shopping
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

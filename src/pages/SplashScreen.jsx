@@ -1,67 +1,72 @@
-// src/pages/SplashScreen.jsx
-import { useState, useEffect } from "react";
-import BackgroundPattern from "../components/splash/BackgroundPattern";
-import FloatingElements from "../components/splash/FloatingElements";
-import LogoContainer from "../components/splash/LogoContainer";
-import TitleSection from "../components/splash/TitleSection";
-import LoadingAnimation from "../components/splash/LoadingAnimation";
-import Footer from "../components/splash/Footer";
+import { motion } from 'motion/react';
+import { Wrench } from 'lucide-react';
 
-export default function SplashScreen({ onComplete }) {
-  const [progress, setProgress] = useState(0);
-  const [isVisible, setIsVisible] = useState(true);
-  const [fadeIn, setFadeIn] = useState(false);
-  const [fadeOut, setFadeOut] = useState(false);
-
-  useEffect(() => {
-    setTimeout(() => setFadeIn(true), 150);
-
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-
-          setTimeout(() => {
-            setFadeOut(true);
-            setTimeout(() => {
-              setIsVisible(false);
-              if (typeof onComplete === "function") onComplete();
-            }, 800);
-          }, 500);
-
-          return 100;
-        }
-        return prev + 6;
-      });
-    }, 120);
-
-    return () => clearInterval(interval);
-  }, [onComplete]);
-
-  if (!isVisible) return null;
-
+export default function SplashScreen() {
   return (
-    <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center 
-      bg-gradient-to-br from-green-200 via-white to-blue-300 px-4 transition-all duration-700
-      ${fadeIn ? "opacity-100" : "opacity-0"} 
-      ${fadeOut ? "opacity-0 scale-110" : "scale-100"}`}
-    >
-      <BackgroundPattern />
-      <FloatingElements />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0A1A3F] via-[#0d2154] to-[#0A1A3F]">
+      <div className="text-center">
+        <motion.div
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mb-8 flex justify-center"
+        >
+          <div className="relative">
+            <div className="absolute inset-0 bg-[#FF7A00] blur-3xl opacity-50 rounded-full"></div>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="relative bg-white rounded-[20px] p-8 shadow-2xl"
+            >
+              <Wrench className="w-20 h-20 text-[#FF7A00]" strokeWidth={2.5} />
+            </motion.div>
+          </div>
+        </motion.div>
 
-      <div
-        className={`relative z-10 flex flex-col items-center justify-center space-y-4
-        transition-all duration-700
-        ${fadeIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}
-        ${fadeOut ? "opacity-0 -translate-y-10" : ""}`}
-      >
-        <LogoContainer />
-        <TitleSection />
-        <LoadingAnimation progress={progress} />
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.6 }}
+        >
+          <h1 className="text-white mb-3">
+            <span className="block text-4xl mb-2">Bengkel</span>
+            <span className="block text-5xl">SparePart Digital</span>
+          </h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1, duration: 0.6 }}
+            className="text-[#FF7A00] text-xl tracking-wide"
+          >
+            Your Complete Vehicle Parts Marketplace
+          </motion.p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 0.6 }}
+          className="mt-12"
+        >
+          <div className="flex gap-2 justify-center">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                animate={{ 
+                  scale: [1, 1.2, 1],
+                  opacity: [0.5, 1, 0.5]
+                }}
+                transition={{
+                  duration: 1,
+                  repeat: Infinity,
+                  delay: i * 0.2
+                }}
+                className="w-3 h-3 bg-[#FF7A00] rounded-full"
+              />
+            ))}
+          </div>
+        </motion.div>
       </div>
-
-      <Footer />
     </div>
   );
 }

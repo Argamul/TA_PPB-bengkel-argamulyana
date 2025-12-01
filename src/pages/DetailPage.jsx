@@ -1,80 +1,224 @@
-// src/pages/DetailPage.jsx
-import { useState, useEffect } from "react";
-import { ArrowLeft, Star, ShoppingCart } from "lucide-react";
-import { useWishlist } from "../hooks/useToggleWishlist";
+import { useState } from 'react';
+import { ArrowLeft, ShoppingCart, Heart, Star, Package, Truck, Shield, ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default function DetailPage({ partId, onNavigate }) {
-  const [part, setPart] = useState(null);
-  const { wishlisted, toggleWishlist } = useWishlist(part);
+export default function DetailPage({ product, navigateTo, addToCart, addToWishlist }) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [addedToCart, setAddedToCart] = useState(false);
+  const [addedToWishlist, setAddedToWishlist] = useState(false);
 
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("parts")) || [];
-    const found = stored.find((item) => item.id === partId);
-    setPart(found);
-  }, [partId]);
-
-  const addToCart = () => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const exists = cart.find((c) => c.id === part.id);
-
-    if (exists) {
-      exists.qty += 1;
-    } else {
-      cart.push({ ...part, qty: 1 });
-    }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-    alert("Ditambahkan ke keranjang!");
-  };
-
-  if (!part) {
+  if (!product) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-slate-500">Memuat...</p>
+        <p className="text-slate-600">Product not found</p>
       </div>
     );
   }
 
+  const images = product.images || [product.image];
+
+  const handleAddToCart = () => {
+    addToCart(product);
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 2000);
+  };
+
+  const handleAddToWishlist = () => {
+    addToWishlist(product);
+    setAddedToWishlist(true);
+    setTimeout(() => setAddedToWishlist(false), 2000);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pb-24">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="sticky top-0 bg-white border-b shadow-sm flex items-center p-4 gap-4">
-        <button onClick={() => onNavigate("catalog")} className="text-slate-700 hover:text-slate-900">
-          <ArrowLeft className="w-6 h-6" />
-        </button>
-        <h1 className="text-xl font-semibold text-slate-800">Detail Produk</h1>
-      </div>
-
-      <main className="max-w-3xl mx-auto p-4">
-        <img
-          src={part.image}
-          alt={part.name}
-          className="w-full rounded-2xl object-cover border h-60 mb-6"
-        />
-
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-2xl font-bold text-slate-900">{part.name}</h2>
-          <button onClick={toggleWishlist} className="text-yellow-500">
-            <Star className={`w-7 h-7 ${wishlisted ? "fill-yellow-500" : "text-yellow-500"}`} />
-          </button>
-        </div>
-
-        <p className="text-lg text-blue-600 font-semibold mb-3">
-          Rp {part.price.toLocaleString()}
-        </p>
-
-        <p className="text-slate-600 mb-6 leading-relaxed">{part.description}</p>
-
-        <div className="bg-blue-600 p-4 rounded-xl text-white shadow-lg">
+      <header className="bg-white shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           <button
-            onClick={addToCart}
-            className="flex items-center justify-center gap-2 w-full py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-slate-100 transition"
+            onClick={() => navigateTo('catalog')}
+            className="flex items-center gap-2 text-[#0A1A3F] hover:text-[#FF7A00] transition-colors"
           >
-            <ShoppingCart className="w-5 h-5" />
-            Tambah ke Keranjang
+            <ArrowLeft className="w-6 h-6" />
+            <span>Back to Catalog</span>
           </button>
         </div>
-      </main>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid lg:grid-cols-2 gap-12">
+          {/* Image Viewer */}
+          <div>
+            <div className="bg-white rounded-[20px] shadow-lg p-8 mb-4 relative overflow-hidden">
+              <img
+                src={images[currentImageIndex]}
+                alt={product.name}
+                className="w-full h-96 object-contain"
+              />
+              
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all"
+                  >
+                    <ChevronLeft className="w-6 h-6 text-[#0A1A3F]" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white p-2 rounded-full shadow-lg transition-all"
+                  >
+                    <ChevronRight className="w-6 h-6 text-[#0A1A3F]" />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Thumbnail Gallery */}
+            {images.length > 1 && (
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {images.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentImageIndex(idx)}
+                    className={`flex-shrink-0 w-20 h-20 rounded-[12px] overflow-hidden border-2 transition-all ${
+                      idx === currentImageIndex
+                        ? 'border-[#FF7A00] shadow-md'
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Product Info */}
+          <div>
+            <div className="bg-white rounded-[20px] shadow-lg p-8">
+              {/* Category Badge */}
+              <div className="inline-block px-4 py-1 bg-[#0A1A3F]/10 text-[#0A1A3F] rounded-full text-sm mb-4 capitalize">
+                {product.category}
+              </div>
+
+              <h1 className="text-[#0A1A3F] mb-4">{product.name}</h1>
+
+              {/* Rating */}
+              <div className="flex items-center gap-2 mb-6">
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-5 h-5 ${
+                        i < Math.floor(product.rating)
+                          ? 'fill-[#FF7A00] text-[#FF7A00]'
+                          : 'text-slate-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-slate-600">
+                  {product.rating} ({product.reviews || 0} reviews)
+                </span>
+              </div>
+
+              {/* Price */}
+              <div className="mb-6">
+                <div className="text-4xl text-[#FF7A00] mb-2">
+                  ${product.price.toLocaleString()}
+                </div>
+                {product.oldPrice && (
+                  <div className="text-slate-400 line-through">
+                    ${product.oldPrice.toLocaleString()}
+                  </div>
+                )}
+              </div>
+
+              {/* Product Details */}
+              <div className="grid grid-cols-2 gap-4 mb-6 p-6 bg-slate-50 rounded-[20px]">
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Manufacturer</p>
+                  <p className="text-[#0A1A3F]">{product.manufacturer}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Engine Type</p>
+                  <p className="text-[#0A1A3F]">{product.engineType}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Part Number</p>
+                  <p className="text-[#0A1A3F]">{product.partNumber || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Stock Status</p>
+                  <p className="text-green-600">{product.inStock ? 'In Stock' : 'Out of Stock'}</p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="mb-6">
+                <h3 className="text-[#0A1A3F] mb-2">Description</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  {product.description}
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-4 mb-6">
+                <button
+                  onClick={handleAddToCart}
+                  className={`flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-[20px] shadow-lg transition-all ${
+                    addedToCart
+                      ? 'bg-green-500 text-white'
+                      : 'bg-[#FF7A00] hover:bg-[#ff8a1a] text-white'
+                  }`}
+                >
+                  <ShoppingCart className="w-5 h-5" />
+                  {addedToCart ? 'Added to Cart!' : 'Add to Cart'}
+                </button>
+                <button
+                  onClick={handleAddToWishlist}
+                  className={`px-6 py-4 rounded-[20px] border-2 transition-all ${
+                    addedToWishlist
+                      ? 'bg-pink-50 border-pink-500 text-pink-500'
+                      : 'border-[#0A1A3F] text-[#0A1A3F] hover:bg-[#0A1A3F] hover:text-white'
+                  }`}
+                >
+                  <Heart className={`w-5 h-5 ${addedToWishlist ? 'fill-pink-500' : ''}`} />
+                </button>
+              </div>
+
+              {/* Features */}
+              <div className="grid gap-4">
+                <div className="flex items-center gap-3 text-slate-600">
+                  <div className="bg-green-100 p-2 rounded-[12px]">
+                    <Truck className="w-5 h-5 text-green-600" />
+                  </div>
+                  <span>Free shipping on orders over $500</span>
+                </div>
+                <div className="flex items-center gap-3 text-slate-600">
+                  <div className="bg-blue-100 p-2 rounded-[12px]">
+                    <Package className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <span>Easy returns within 30 days</span>
+                </div>
+                <div className="flex items-center gap-3 text-slate-600">
+                  <div className="bg-purple-100 p-2 rounded-[12px]">
+                    <Shield className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <span>1 year warranty included</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
