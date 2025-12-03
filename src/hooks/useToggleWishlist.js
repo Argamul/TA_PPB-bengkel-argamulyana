@@ -1,35 +1,28 @@
-// src/hooks/useWishlist.js
 import { useState, useEffect } from "react";
-import { toggleWishlist, isWishlisted } from "../services/wishlistService";
 
-/**
- * Custom hook untuk mengelola wishlist
- * digunakan untuk sparepart atau kendaraan
- */
-export const useWishlist = (item) => {
-  const [wishlisted, setWishlisted] = useState(false);
-  const [loading, setLoading] = useState(false);
+export default function useToggleWishlist(product) {
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
-  // Cek status awal pada localStorage
   useEffect(() => {
-    if (item?.id) {
-      setWishlisted(isWishlisted(item.id));
+    const stored = JSON.parse(localStorage.getItem("wishlist") || "[]");
+    setIsWishlisted(stored.some((item) => item.id === product.id));
+  }, [product.id]);
+
+  const toggleWishlist = () => {
+    let stored = JSON.parse(localStorage.getItem("wishlist") || "[]");
+
+    if (isWishlisted) {
+      // REMOVE
+      stored = stored.filter((item) => item.id !== product.id);
+      setIsWishlisted(false);
+    } else {
+      // ADD
+      stored.push(product);
+      setIsWishlisted(true);
     }
-  }, [item?.id]);
 
-  const toggle = async () => {
-    if (!item) return;
-
-    setLoading(true);
-    const result = toggleWishlist(item);
-    setWishlisted(result);
-
-    // Trigger event untuk sinkronisasi jika dibuka di halaman lain
-    window.dispatchEvent(new Event("storage"));
-
-    setLoading(false);
-    return result;
+    localStorage.setItem("wishlist", JSON.stringify(stored));
   };
 
-  return { wishlisted, toggle, loading };
-};
+  return { isWishlisted, toggleWishlist };
+}

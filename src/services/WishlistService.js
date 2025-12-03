@@ -1,31 +1,20 @@
-// src/services/wishlistService.js
+const KEY = "bengkel_gamul_wishlist";
 
-const STORAGE_KEY = "wishlist-items";
+export function getWishlist() {
+  const raw = localStorage.getItem(KEY);
+  return raw ? JSON.parse(raw) : [];
+}
 
-// Ambil data wishlist dari localStorage
-export const getWishlist = () => {
-  const saved = localStorage.getItem(STORAGE_KEY);
-  return saved ? JSON.parse(saved) : [];
-};
+export function toggleWishlist(id) {
+  const current = getWishlist();
+  const exists = current.includes(id);
+  const next = exists
+    ? current.filter((x) => x !== id)
+    : [...current, id];
+  localStorage.setItem(KEY, JSON.stringify(next));
+  return next;
+}
 
-// Check apakah item sudah masuk wishlist
-export const isWishlisted = (id) => {
-  const items = getWishlist();
-  return items.some((item) => item.id === id);
-};
-
-// Toggle wishlist (add/remove)
-export const toggleWishlist = (item) => {
-  const items = getWishlist();
-  const exists = items.some((i) => i.id === item.id);
-
-  let newWishlist;
-  if (exists) {
-    newWishlist = items.filter((i) => i.id !== item.id);
-  } else {
-    newWishlist = [...items, item];
-  }
-
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(newWishlist));
-  return !exists; // return wishlist status
-};
+export function isWishlisted(id) {
+  return getWishlist().includes(id);
+}

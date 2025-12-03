@@ -1,7 +1,9 @@
 export default function TitleSection() {
   return (
-    <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-800 drop-shadow-md text-center">
-      Bengkel Sparepart Modern
-    </h1>
+    <>
+      <h2 className="splash-title-top">Bengkel</h2>
+      <h1 className="splash-title-main">SparePart Digital</h1>
+      <p className="splash-subtitle">Your Complete Vehicle Parts Marketplace</p>
+    </>
   );
 }
