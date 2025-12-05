@@ -1,38 +1,47 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import useToggleWishlist from "../../hooks/useToggleWishlist";
 import WishlistButton from "../button/WishlistButton";
 import useCart from "../../hooks/useCart";
 import { FaCartPlus } from "react-icons/fa";
 
 export default function ProductCard({ product }) {
+  const navigate = useNavigate();
+
   const { isWishlisted, toggleWishlist } = useToggleWishlist(product);
   const { addToCart } = useCart();
 
-  return (
-    <article className="card product-card">
-      
-      {/* IMAGE + Wishlist */}
-      <div className="card-img-wrapper">
-        <Link to={`/catalog/${product.id}`}>
-          <img
-            src={product.image}
-            alt={product.manufacturer}
-            className="card-img"
-            onError={(e) => (e.target.src = "/fallback.jpg")}
-          />
-        </Link>
+  const goDetail = () => navigate(`/catalog/${product.id}`);
 
-        <div className="wishlist-float">
-          <WishlistButton
-            isActive={isWishlisted}
-            onToggle={toggleWishlist}
-          />
+  return (
+    <article
+      className="card product-card"
+      onClick={goDetail}
+      style={{ cursor: "pointer", position: "relative" }}
+    >
+      {/* IMAGE WRAPPER */}
+      <div className="card-img-wrapper">
+        <img
+          src={product.image}
+          alt={product.name}
+          className="card-img"
+          onError={(e) => (e.target.src = "/fallback.jpg")}
+        />
+
+        {/* Wishlist — prevent redirect */}
+        <div
+          className="wishlist-float"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleWishlist();
+          }}
+        >
+          <WishlistButton isActive={isWishlisted} />
         </div>
       </div>
 
       {/* BODY */}
       <div className="card-body">
-        <h3 className="product-title">{product.manufacturer}</h3>
+        <h3 className="product-title">{product.name}</h3>
         <p className="product-subtext">{product.engine_type}</p>
 
         <p className="product-price">
@@ -42,7 +51,10 @@ export default function ProductCard({ product }) {
         {/* ADD TO CART */}
         <button
           className="btn-cart-mini"
-          onClick={() => addToCart(product)}
+          onClick={(e) => {
+            e.stopPropagation(); // cegah buka detail
+            addToCart(product);
+          }}
         >
           <FaCartPlus size={16} /> Tambah
         </button>

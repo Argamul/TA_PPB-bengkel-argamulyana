@@ -1,217 +1,141 @@
-import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-
-import { getProductById } from "../services/ProductService";
-import useCart from "../hooks/useCart";
-import useToggleWishlist from "../hooks/useToggleWishlist";
-
+// pages/DetailPage.jsx
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
-  ArrowLeft,
-  ShoppingCart,
-  Heart,
-  Star,
-  Package,
-  Truck,
-  Shield,
-  ChevronLeft,
-  ChevronRight
-} from "lucide-react";
+  LuTruck,
+  LuArrowLeftRight,
+  LuShieldCheck,
+  LuHeart
+} from "react-icons/lu";
+import { supabase } from "../services/SupabaseClient";
 
 export default function DetailPage() {
-  const { id } = useParams();              // id dari URL
-  const navigate = useNavigate();          // tombol back
-  const { addToCart } = useCart();         // keranjang
-  const { isWishlisted, toggleWishlist } = useToggleWishlist(); // wishlist
+  const { id } = useParams();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [wish, setWish] = useState(false);
 
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // Format Rupiah
+  const formatRp = (num) => "Rp " + Number(num).toLocaleString("id-ID");
 
-  // Ambil produk dari Supabase
+  // ======================================
+  // FETCH PRODUK DARI SUPABASE
+  // ======================================
   useEffect(() => {
-    async function load() {
-      const data = await getProductById(id);
-      setProduct(data);
+    async function fetchProduct() {
+      console.log("Querying spare_parts for ID:", id);
+
+      const { data, error } = await supabase
+        .from("spare_parts")               // ← GANTI DI SINI
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        console.error("Supabase error:", error);
+      } else {
+        console.log("Product fetched:", data);
+        setProduct(data);
+      }
+
       setLoading(false);
     }
-    load();
+
+    fetchProduct();
   }, [id]);
 
-  if (loading)
-    return <p style={{ padding: 20 }}>Memuat detail...</p>;
-
-  if (!product)
-    return <p style={{ padding: 20 }}>Produk tidak ditemukan.</p>;
-
-  // jika tidak ada multiple images
-  const images = product.images || [product.image];
-
-  const nextImage = () =>
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
-
-  const prevImage = () =>
-    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  if (loading) return <p style={{ padding: "2rem" }}>Loading product...</p>;
+  if (!product) return <p style={{ padding: "2rem" }}>Product not found.</p>;
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="page">
+      <main className="page-content detail-root">
+        <div className="detail-grid">
 
-      {/* Header simple dengan back */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-2">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-[#0A1A3F] hover:text-[#FF7A00]"
-          >
-            <ArrowLeft className="w-6 h-6" />
-            <span>Kembali</span>
-          </button>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid lg:grid-cols-2 gap-12">
-
-          {/* IMAGE VIEWER */}
-          <div>
-            <div className="bg-white rounded-[20px] shadow-lg p-8 mb-4 relative overflow-hidden">
-              <img
-                src={images[currentImageIndex]}
-                alt={product.manufacturer}
-                className="w-full h-96 object-contain"
-              />
-
-              {images.length > 1 && (
-                <>
-                  <button
-                    onClick={prevImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow"
-                  >
-                    <ChevronLeft className="w-6 h-6 text-[#0A1A3F]" />
-                  </button>
-
-                  <button
-                    onClick={nextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow"
-                  >
-                    <ChevronRight className="w-6 h-6 text-[#0A1A3F]" />
-                  </button>
-                </>
-              )}
-            </div>
-
-            {/* Thumbnail Gallery */}
-            {images.length > 1 && (
-              <div className="flex gap-3 overflow-x-auto pb-2">
-                {images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentImageIndex(idx)}
-                    className={`flex-shrink-0 w-20 h-20 rounded-[12px] overflow-hidden border-2 transition-all ${
-                      idx === currentImageIndex
-                        ? "border-[#FF7A00] shadow-md"
-                        : "border-slate-200 hover:border-slate-300"
-                    }`}
-                  >
-                    <img src={img} className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
+          {/* LEFT IMAGE */}
+          <div className="detail-image-card">
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="detail-image"
+              onError={(e) =>
+                (e.target.src =
+                  "https://via.placeholder.com/400x300?text=No+Image")
+              }
+            />
           </div>
 
-          {/* PRODUCT DETAIL */}
-          <div>
-            <div className="bg-white rounded-[20px] shadow-lg p-8">
+          {/* RIGHT INFO */}
+          <div className="detail-info-card">
 
-              {/* Category */}
-              <div className="inline-block px-4 py-1 bg-[#0A1A3F]/10 text-[#0A1A3F] rounded-full text-sm mb-4 capitalize">
-                {product.category}
-              </div>
+            <span className="detail-tag">{product.category || "Spare Part"}</span>
 
-              <h1 className="text-[#0A1A3F] mb-4 text-3xl font-bold">
-                {product.manufacturer}
-              </h1>
+            {/* NAME */}
+            <h1 className="detail-title">{product.name}</h1>
 
-              {/* PRICE */}
-              <div className="mb-6">
-                <div className="text-4xl text-[#FF7A00] mb-2">
-                  Rp {Number(product.price).toLocaleString("id-ID")}
-                </div>
-              </div>
+            {/* PRICE */}
+            <div className="detail-price-box">
+              <h2 className="detail-price">{formatRp(product.price)}</h2>
+            </div>
 
-              {/* SPECS */}
-              <div className="grid grid-cols-2 gap-4 mb-6 p-6 bg-slate-50 rounded-[20px]">
+            {/* SPECIFICATION */}
+            <div className="detail-spec-box">
+              <div className="spec-row">
                 <div>
-                  <p className="text-sm text-slate-600">Engine Type</p>
-                  <p className="text-[#0A1A3F]">{product.engine_type}</p>
+                  <label>Manufacturer</label>
+                  <p>{product.manufacturer || "-"}</p>
                 </div>
 
                 <div>
-                  <p className="text-sm text-slate-600">Stok</p>
-                  <p className="text-green-600">
-                    {product.stock || "Tersedia"}
+                  <label>Engine Type</label>
+                  <p>{product.engine_type || "-"}</p>
+                </div>
+              </div>
+
+              <div className="spec-row">
+                <div>
+                  <label>Part Number</label>
+                  <p>{product.part_number || "-"}</p>
+                </div>
+
+                <div>
+                  <label>Stock Status</label>
+                  <p className="detail-stock">
+                    {product.stock_status || "In Stock"}
                   </p>
                 </div>
               </div>
-
-              {/* DESCRIPTION */}
-              <div className="mb-6">
-                <h3 className="text-[#0A1A3F] font-semibold mb-2">
-                  Deskripsi
-                </h3>
-                <p className="text-slate-600">
-                  {product.description || "Tidak ada deskripsi."}
-                </p>
-              </div>
-
-              {/* ACTION BUTTONS */}
-              <div className="flex gap-4 mb-6">
-                {/* ADD TO CART */}
-                <button
-                  onClick={() => addToCart(product)}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-4 rounded-[20px] bg-[#FF7A00] hover:bg-[#ff8a1a] text-white shadow"
-                >
-                  <ShoppingCart className="w-5 h-5" />
-                  Tambah Keranjang
-                </button>
-
-                {/* WISHLIST */}
-                <button
-                  onClick={() => toggleWishlist(product)}
-                  className={`px-6 py-4 rounded-[20px] border-2 transition ${
-                    isWishlisted(product.id)
-                      ? "border-pink-500 bg-pink-50 text-pink-500"
-                      : "border-[#0A1A3F] text-[#0A1A3F] hover:bg-[#0A1A3F] hover:text-white"
-                  }`}
-                >
-                  <Heart className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* FEATURES */}
-              <div className="grid gap-4">
-                <div className="flex items-center gap-3 text-slate-600">
-                  <Truck className="w-5 h-5 text-green-600" />
-                  <span>Pengiriman cepat & aman</span>
-                </div>
-
-                <div className="flex items-center gap-3 text-slate-600">
-                  <Package className="w-5 h-5 text-blue-600" />
-                  <span>Packing premium untuk sparepart berat</span>
-                </div>
-
-                <div className="flex items-center gap-3 text-slate-600">
-                  <Shield className="w-5 h-5 text-purple-600" />
-                  <span>Garansi 1 tahun</span>
-                </div>
-              </div>
-
             </div>
-          </div>
 
+            {/* DESCRIPTION */}
+            <h3 className="detail-section-title">Description</h3>
+            <p className="detail-description">
+              {product.description || "No description available."}
+            </p>
+
+            {/* BUTTONS */}
+            <div className="detail-actions">
+              <button className="btn-add-cart">🛒 Add to Cart</button>
+
+              <button
+                className={`btn-wishlist ${wish ? "active" : ""}`}
+                onClick={() => setWish(!wish)}
+              >
+                <LuHeart size={20} />
+              </button>
+            </div>
+
+            {/* BENEFITS */}
+            <div className="detail-benefits">
+              <p><LuTruck /> Gratis ongkir bila belanja lebih dari Rp 500.000</p>
+              <p><LuArrowLeftRight /> Pengembalian dilayani sampai 30 hari setelah pembelian</p>
+              <p><LuShieldCheck /> Garansi 1 tahun sudah termasuk </p>
+            </div>
+
+          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getAllProducts } from "../services/ProductService";
 import ProductCard from "../components/card/ProductCard";
-import DesktopNavbar from "../components/navbar/DesktopNavbar";
-import MobileNavbar from "../components/navbar/MobileNavbar";
 
 const categories = [
   { label: "All", value: "all" },
@@ -27,7 +26,7 @@ export default function CatalogPage() {
     load();
   }, []);
 
-  // Handle category filter
+  // Filter kategori + pencarian
   useEffect(() => {
     let filtered = [...products];
 
@@ -50,10 +49,16 @@ export default function CatalogPage() {
 
   return (
     <div className="page">
-      <DesktopNavbar />
-      <MobileNavbar />
-
       <main className="page-content">
+
+        {/* === ADMIN ADD BUTTON === */}
+        <div style={{ textAlign: "right", marginBottom: "1rem" }}>
+          <Link to="/admin/product">
+            <button className="btn-add-admin">
+              + Tambah Barang (Hanya Admin)
+            </button>
+          </Link>
+        </div>
 
         {/* Search */}
         <div className="search-bar">
@@ -70,9 +75,7 @@ export default function CatalogPage() {
           {categories.map((c) => (
             <button
               key={c.value}
-              className={
-                "filter-chip " + (category === c.value ? "active" : "")
-              }
+              className={`filter-chip ${category === c.value ? "active" : ""}`}
               onClick={() => setCategory(c.value)}
             >
               {c.label}

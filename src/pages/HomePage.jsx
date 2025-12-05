@@ -15,7 +15,6 @@ export default function HomePage() {
 
   return (
     <div className="page">
-      <DesktopNavbar />
       <MobileNavbar />
 
       <main className="page-content">
@@ -25,9 +24,9 @@ export default function HomePage() {
 
         {/* SHOP BY VEHICLE TYPE */}
         <section className="vehicle-type-section">
-          <h2 className="vehicle-title">Shop by Vehicle Type</h2>
+          <h2 className="vehicle-title">CARI KATEGORI KENDARAANMU </h2>
           <p className="vehicle-subtitle">
-            Pilih kategori kendaraan untuk menemukan sparepart yang sesuai
+            Pilih kategori kendaraan untuk menemukan sparepart yang sesuai dengan kebutuhan.
           </p>
 
           <div className="vehicle-grid">

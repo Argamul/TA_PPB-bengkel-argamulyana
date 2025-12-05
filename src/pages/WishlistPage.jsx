@@ -17,8 +17,6 @@ export default function WishlistPage() {
 
   return (
     <div className="page">
-      <DesktopNavbar />
-      <MobileNavbar />
 
       <main className="page-content">
 

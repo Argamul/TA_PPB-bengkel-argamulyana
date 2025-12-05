@@ -4,8 +4,6 @@ import MobileNavbar from "../components/navbar/MobileNavbar.jsx";
 export default function AboutPage() {
   return (
     <div className="page">
-      <DesktopNavbar />
-      <MobileNavbar />
       <main className="page-content">
         <h1>Tentang Bengkel GAMUL</h1>
         <p>

@@ -21,8 +21,6 @@ export default function CartPage() {
 
   return (
     <div className="page">
-      <DesktopNavbar />
-      <MobileNavbar />
 
       <main className="page-content">
 

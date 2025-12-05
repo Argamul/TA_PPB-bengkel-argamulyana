@@ -1,30 +1,32 @@
+// pages/EditProfilePage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function EditProfilePage() {
   const navigate = useNavigate();
 
+  const saved = JSON.parse(localStorage.getItem("user_profile"));
+
   const [form, setForm] = useState({
-    username: "",
+    name: "",
     email: "",
     phone: "",
     address: "",
-    avatar: "",
+    avatar: "" // base64 image
   });
 
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("profile") || "{}");
-    setForm({
-      username: saved.username || "",
-      email: saved.email || "",
-      phone: saved.phone || "",
-      address: saved.address || "",
-      avatar: saved.avatar || "/default-avatar.png",
-    });
+    if (saved) setForm(saved);
   }, []);
 
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  // HANDLE FILE UPLOAD
   function handleAvatarUpload(e) {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
@@ -34,59 +36,83 @@ export default function EditProfilePage() {
     reader.readAsDataURL(file);
   }
 
-  function saveProfile() {
-    localStorage.setItem("profile", JSON.stringify(form));
+  function handleSubmit(e) {
+    e.preventDefault();
+
+    localStorage.setItem("user_profile", JSON.stringify(form));
+
+    alert("Profile updated!");
     navigate("/profile");
   }
 
   return (
-    <div className="page page-content">
-      <h1>Edit Profile</h1>
+    <div className="page">
+      <main className="page-content">
 
-      <div className="form">
-        <label>
-          Foto Profil
-          <img src={form.avatar} className="edit-avatar" alt="avatar" />
-          <input type="file" accept="image/*" onChange={handleAvatarUpload} />
-        </label>
+        <div className="edit-profile-wrapper">
+          <h1 className="edit-title">Edit Profile</h1>
 
-        <label>
-          Username
-          <input
-            value={form.username}
-            onChange={(e) => setForm({ ...form, username: e.target.value })}
-          />
-        </label>
+          <div className="edit-card">
 
-        <label>
-          Email
-          <input
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
-        </label>
+            {/* Avatar preview */}
+            <div className="avatar-preview">
+              <img
+                src={form.avatar || "https://via.placeholder.com/120?text=Avatar"}
+                alt="avatar"
+              />
+            </div>
 
-        <label>
-          Phone Number
-          <input
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          />
-        </label>
+            {/* Upload button */}
+            <label className="upload-btn">
+              Upload New Avatar
+              <input type="file" accept="image/*" onChange={handleAvatarUpload} />
+            </label>
 
-        <label>
-          Address
-          <textarea
-            value={form.address}
-            onChange={(e) => setForm({ ...form, address: e.target.value })}
-          />
-        </label>
+            {/* FORM */}
+            <form className="edit-form" onSubmit={handleSubmit}>
 
-        <button className="btn primary" onClick={saveProfile}>
-          Save Changes
-        </button>
-      </div>
+              <label className="edit-label">Full Name</label>
+              <input
+                name="name"
+                className="edit-input"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
+
+              <label className="edit-label">Email</label>
+              <input
+                name="email"
+                className="edit-input"
+                value={form.email}
+                onChange={handleChange}
+                required
+              />
+
+              <label className="edit-label">Phone Number</label>
+              <input
+                name="phone"
+                className="edit-input"
+                value={form.phone}
+                onChange={handleChange}
+              />
+
+              <label className="edit-label">Address</label>
+              <input
+                name="address"
+                className="edit-input"
+                value={form.address}
+                onChange={handleChange}
+              />
+
+              <button className="save-profile-btn" type="submit">
+                Save Changes
+              </button>
+            </form>
+
+          </div>
+        </div>
+      </main>
     </div>
   );
 }

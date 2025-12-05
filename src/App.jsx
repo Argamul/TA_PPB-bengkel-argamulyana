@@ -1,17 +1,5 @@
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-
-import SplashScreen from "./pages/SplashScreen.jsx";
-import HomePage from "./pages/HomePage.jsx";
-import CatalogPage from "./pages/CatalogPage.jsx";
-import DetailPage from "./pages/DetailPage.jsx";
-import CartPage from "./pages/CartPage.jsx";
-import WishlistPage from "./pages/WishlistPage.jsx";
-import ProfilePage from "./pages/ProfilePage.jsx";
-import EditProfilePage from "./pages/EditProfilePage.jsx";
-import OrderPage from "./pages/OrderPage.jsx";
-import AddEditPage from "./pages/AddEditPage.jsx";
-import AboutPage from "./pages/AboutPage.jsx";
-import BackButton from "./components/button/BackButton.jsx";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Suspense, lazy } from "react";
 
 import DesktopNavbar from "./components/navbar/DesktopNavbar.jsx";
 import MobileNavbar from "./components/navbar/MobileNavbar.jsx";
@@ -19,151 +7,162 @@ import MobileNavbar from "./components/navbar/MobileNavbar.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
 import PWABadges from "./PWABadges.jsx";
 
+// ------------ LAZY LOADING HALAMAN ------------
+const SplashScreen = lazy(() => import("./pages/SplashScreen.jsx"));
+const HomePage = lazy(() => import("./pages/HomePage.jsx"));
+const CatalogPage = lazy(() => import("./pages/CatalogPage.jsx"));
+const DetailPage = lazy(() => import("./pages/DetailPage.jsx"));
+const CartPage = lazy(() => import("./pages/CartPage.jsx"));
+const WishlistPage = lazy(() => import("./pages/WishlistPage.jsx"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage.jsx"));
+const EditProfilePage = lazy(() => import("./pages/EditProfilePage.jsx"));
+const OrderPage = lazy(() => import("./pages/OrderPage.jsx"));
+const AddEditPage = lazy(() => import("./pages/AddEditPage.jsx"));
+const AboutPage = lazy(() => import("./pages/AboutPage.jsx"));
 
-// -------------------------------
-// MAIN LAYOUT (FINAL)
-// -------------------------------
+// ------------ LOADING SCREEN ------------
+function LoadingScreen() {
+  return (
+    <div style={{ padding: "2rem", textAlign: "center", color: "white" }}>
+      Loading...
+    </div>
+  );
+}
+
+// ------------ MAIN LAYOUT ------------
 function MainLayout({ children }) {
-  const location = useLocation();                 // FIX HERE
-  const current = location.pathname;              // gunakan pathname router
-  const hiddenBackRoutes = ["/", "/home"];        // halaman tanpa back button
-
   return (
     <>
       <DesktopNavbar />
       <MobileNavbar />
 
       <div className="page">
-
-        {/* BackButton muncul di semua halaman kecuali yang disembunyikan */}
-        {!hiddenBackRoutes.includes(current) && (
-          <div style={{ padding: "1rem" }}>
-            <BackButton />
-          </div>
-        )}
-
         {children}
       </div>
     </>
   );
 }
 
-// -------------------------------
-// ROUTES
-// -------------------------------
+// ------------ ROUTES ------------
 export default function App() {
   return (
     <ErrorBoundary>
       <div className="app-root">
-        <Routes>
 
-          {/* Splash tanpa layout */}
-          <Route path="/" element={<SplashScreen />} />
+        {/* WRAP ALL ROUTES WITH SUSPENSE */}
+        <Suspense fallback={<LoadingScreen />}>
 
-          {/* Home */}
-          <Route
-            path="/home"
-            element={
-              <MainLayout>
-                <HomePage />
-              </MainLayout>
-            }
-          />
+          <Routes>
 
-          {/* Catalog */}
-          <Route
-            path="/catalog"
-            element={
-              <MainLayout>
-                <CatalogPage />
-              </MainLayout>
-            }
-          />
+            {/* Splash tanpa layout */}
+            <Route path="/" element={<SplashScreen />} />
 
-          {/* Detail Page */}
-          <Route
-            path="/catalog/:id"
-            element={
-              <MainLayout>
-                <DetailPage />
-              </MainLayout>
-            }
-          />
+            {/* Home */}
+            <Route
+              path="/home"
+              element={
+                <MainLayout>
+                  <HomePage />
+                </MainLayout>
+              }
+            />
 
-          {/* Cart */}
-          <Route
-            path="/cart"
-            element={
-              <MainLayout>
-                <CartPage />
-              </MainLayout>
-            }
-          />
+            {/* Catalog */}
+            <Route
+              path="/catalog"
+              element={
+                <MainLayout>
+                  <CatalogPage />
+                </MainLayout>
+              }
+            />
 
-          {/* Wishlist */}
-          <Route
-            path="/wishlist"
-            element={
-              <MainLayout>
-                <WishlistPage />
-              </MainLayout>
-            }
-          />
+            {/* Detail page */}
+            <Route
+              path="/catalog/:id"
+              element={
+                <MainLayout>
+                  <DetailPage />
+                </MainLayout>
+              }
+            />
 
-          {/* Profile */}
-          <Route
-            path="/profile"
-            element={
-              <MainLayout>
-                <ProfilePage />
-              </MainLayout>
-            }
-          />
+            {/* Cart */}
+            <Route
+              path="/cart"
+              element={
+                <MainLayout>
+                  <CartPage />
+                </MainLayout>
+              }
+            />
 
-          {/* Edit profile */}
-          <Route
-            path="/profile/edit"
-            element={
-              <MainLayout>
-                <EditProfilePage />
-              </MainLayout>
-            }
-          />
+            {/* Wishlist */}
+            <Route
+              path="/wishlist"
+              element={
+                <MainLayout>
+                  <WishlistPage />
+                </MainLayout>
+              }
+            />
 
-          {/* Orders */}
-          <Route
-            path="/orders"
-            element={
-              <MainLayout>
-                <OrderPage />
-              </MainLayout>
-            }
-          />
+            {/* Profile */}
+            <Route
+              path="/profile"
+              element={
+                <MainLayout>
+                  <ProfilePage />
+                </MainLayout>
+              }
+            />
 
-          {/* Admin */}
-          <Route
-            path="/admin/product/:id?"
-            element={
-              <MainLayout>
-                <AddEditPage />
-              </MainLayout>
-            }
-          />
+            {/* Edit profile */}
+            <Route
+              path="/profile/edit"
+              element={
+                <MainLayout>
+                  <EditProfilePage />
+                </MainLayout>
+              }
+            />
 
-          {/* About */}
-          <Route
-            path="/about"
-            element={
-              <MainLayout>
-                <AboutPage />
-              </MainLayout>
-            }
-          />
+            {/* Orders */}
+            <Route
+              path="/orders"
+              element={
+                <MainLayout>
+                  <OrderPage />
+                </MainLayout>
+              }
+            />
 
-          {/* Catch all */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+            {/* Admin Add/Edit */}
+            <Route
+              path="/admin/product/:id?"
+              element={
+                <MainLayout>
+                  <AddEditPage />
+                </MainLayout>
+              }
+            />
 
-        </Routes>
+            {/* About */}
+            <Route
+              path="/about"
+              element={
+                <MainLayout>
+                  <AboutPage />
+                </MainLayout>
+              }
+            />
+
+            {/* Catch All */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+
+          </Routes>
+
+        </Suspense>
 
         <PWABadges />
       </div>
