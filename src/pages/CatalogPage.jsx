@@ -20,7 +20,7 @@ export default function CatalogPage() {
 
   const navigate = useNavigate();
 
-  // FETCH products
+  // FETCH SUPABASE
   useEffect(() => {
     async function load() {
       const data = await getAllProducts();
@@ -30,20 +30,23 @@ export default function CatalogPage() {
     load();
   }, []);
 
-  // APPLY FILTERS
+  // FILTER + SEARCH
   useEffect(() => {
     let filtered = [...products];
 
+    // category filter
     if (category !== "all") {
       filtered = filtered.filter((p) => p.category === category);
     }
 
+    // search filter — SAFE NULL CHECK
     if (search.trim() !== "") {
       const s = search.toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.name.toLowerCase().includes(s) ||
-          p.manufacturer.toLowerCase().includes(s)
+
+      filtered = filtered.filter((p) =>
+        (p.manufacturer || "").toLowerCase().includes(s) ||
+        (p.engine_type || "").toLowerCase().includes(s) ||
+        String(p.price || "").includes(s)
       );
     }
 
@@ -73,7 +76,7 @@ export default function CatalogPage() {
           />
         </div>
 
-        {/* CATEGORIES */}
+        {/* CATEGORY TABS */}
         <div className="filter-row">
           {categories.map((c) => (
             <button
@@ -86,13 +89,17 @@ export default function CatalogPage() {
           ))}
         </div>
 
-        <p className="result-count">Showing {displayed.length} products</p>
+        <p className="result-count">
+          Showing {displayed.length} products
+        </p>
 
-        {/* PRODUCT GRID */}
+        {/* PRODUCT LIST */}
         <div className="grid-products">
-          {displayed.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
+          {displayed.length === 0 ? (
+            <p style={{ color: "#ccc" }}>Tidak ada produk ditemukan.</p>
+          ) : (
+            displayed.map((p) => <ProductCard key={p.id} product={p} />)
+          )}
         </div>
 
       </main>
