@@ -1,23 +1,14 @@
+// services/ProductService.js
 import { supabase } from "./SupabaseClient";
 
-export async function getProductsByCategory(category) {
-  const { data, error } = await supabase
-    .from("spare_parts")
-    .select("*")
-    .eq("category", category)
-
-  if (error) {
-    console.error("Supabase error:", error);
-    return []; // FIX: selalu return array
-  }
-
-  return data || []; // FIX: tidak mungkin null
-}
-
+// ============================
+// GET ALL PRODUCTS
+// ============================
 export async function getAllProducts() {
   const { data, error } = await supabase
     .from("spare_parts")
     .select("*")
+    .order("created_at", { ascending: false });
 
   if (error) {
     console.error("Supabase error:", error);
@@ -27,44 +18,75 @@ export async function getAllProducts() {
   return data || [];
 }
 
-export async function getProductById(category) {
+// ============================
+// GET PRODUCTS BY CATEGORY
+// ============================
+export async function getProductsByCategory(category) {
   const { data, error } = await supabase
     .from("spare_parts")
     .select("*")
     .eq("category", category)
+    .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Supabase error:", error);
+    console.error("CATEGORY ERROR:", error);
+    return [];
+  }
+
+  return data || [];
+}
+
+// ============================
+// GET PRODUCT BY ID
+// ============================
+export async function getProductById(id) {
+  const { data, error } = await supabase
+    .from("spare_parts")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.error("SUPABASE GET ERROR:", error);
     return null;
   }
 
   return data;
 }
 
-export async function createProduct() {
+// ============================
+// CREATE PRODUCT
+// ============================
+export async function createProduct(product) {
   const { data, error } = await supabase
     .from("spare_parts")
-    .select();
+    .insert([product])
+    .select()
+    .single();
 
   if (error) {
-    console.error("Create error:", error);
-    throw error;
+    console.error("CREATE ERROR:", error);
+    return null;
   }
 
-  return data?.[0];
+  return data;
 }
 
-export async function updateProduct(id, payload) {
+// ============================
+// UPDATE PRODUCT
+// ============================
+export async function updateProduct(id, product) {
   const { data, error } = await supabase
     .from("spare_parts")
-    .update(payload)
+    .update(product)
     .eq("id", id)
-    .select();
+    .select()
+    .single();
 
   if (error) {
-    console.error("Update error:", error);
-    throw error;
+    console.error("UPDATE ERROR:", error);
+    return null;
   }
 
-  return data?.[0];
+  return data;
 }

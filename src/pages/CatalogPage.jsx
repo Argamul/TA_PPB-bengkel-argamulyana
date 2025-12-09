@@ -1,6 +1,7 @@
+// pages/CatalogPage.jsx
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { getAllProducts } from "../services/ProductService";
+import { useNavigate } from "react-router-dom";
 import ProductCard from "../components/card/ProductCard";
 
 const categories = [
@@ -17,6 +18,9 @@ export default function CatalogPage() {
   const [category, setCategory] = useState("all");
   const [search, setSearch] = useState("");
 
+  const navigate = useNavigate();
+
+  // FETCH products
   useEffect(() => {
     async function load() {
       const data = await getAllProducts();
@@ -26,7 +30,7 @@ export default function CatalogPage() {
     load();
   }, []);
 
-  // Filter kategori + pencarian
+  // APPLY FILTERS
   useEffect(() => {
     let filtered = [...products];
 
@@ -38,9 +42,8 @@ export default function CatalogPage() {
       const s = search.toLowerCase();
       filtered = filtered.filter(
         (p) =>
-          p.manufacturer.toLowerCase().includes(s) ||
-          p.engine_type.toLowerCase().includes(s) ||
-          String(p.price).includes(s)
+          p.name.toLowerCase().includes(s) ||
+          p.manufacturer.toLowerCase().includes(s)
       );
     }
 
@@ -51,16 +54,16 @@ export default function CatalogPage() {
     <div className="page">
       <main className="page-content">
 
-        {/* === ADMIN ADD BUTTON === */}
-        <div style={{ textAlign: "right", marginBottom: "1rem" }}>
-          <Link to="/admin/product">
-            <button className="btn-add-admin">
-              + Tambah Barang (Hanya Admin)
-            </button>
-          </Link>
-        </div>
+        {/* ADMIN BUTTON */}
+        <button
+          className="btn-primary-cta"
+          style={{ marginBottom: "1rem" }}
+          onClick={() => navigate("/admin/product")}
+        >
+          + Tambah Barang (Admin)
+        </button>
 
-        {/* Search */}
+        {/* SEARCH */}
         <div className="search-bar">
           <input
             type="text"
@@ -70,12 +73,12 @@ export default function CatalogPage() {
           />
         </div>
 
-        {/* Filter Chips */}
+        {/* CATEGORIES */}
         <div className="filter-row">
           {categories.map((c) => (
             <button
               key={c.value}
-              className={`filter-chip ${category === c.value ? "active" : ""}`}
+              className={"filter-chip " + (category === c.value ? "active" : "")}
               onClick={() => setCategory(c.value)}
             >
               {c.label}
@@ -83,16 +86,15 @@ export default function CatalogPage() {
           ))}
         </div>
 
-        <p className="result-count">
-          Showing {displayed.length} products
-        </p>
+        <p className="result-count">Showing {displayed.length} products</p>
 
-        {/* Product Grid */}
+        {/* PRODUCT GRID */}
         <div className="grid-products">
           {displayed.map((p) => (
             <ProductCard key={p.id} product={p} />
           ))}
         </div>
+
       </main>
     </div>
   );

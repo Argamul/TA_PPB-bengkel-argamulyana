@@ -1,207 +1,183 @@
+// pages/AddEditPage.jsx
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-
+import { useNavigate, useParams } from "react-router-dom";
 import {
   getProductById,
   createProduct,
-  updateProduct,
+  updateProduct
 } from "../services/ProductService";
 
-import { uploadImage } from "../services/uploadService";
-
 export default function AddEditPage() {
-  const { id } = useParams();
   const navigate = useNavigate();
-
-  const [form, setForm] = useState({
-    name: "",
-    manufacturer: "",
-    engine_type: "",
-    category: "Mobil",
-    price: 0,
-    part_number: "",
-    stock_status: true,
-    description: "",
-    image: "",
-  });
+  const { id } = useParams();
 
   const [loading, setLoading] = useState(false);
 
+  // HANYA KOLOM YANG ADA DI SUPABASE
+  const [form, setForm] = useState({
+    manufacturer: "",
+    engine_type: "",
+    price: "",
+    category: "Mobil",
+    image: ""
+  });
+
+  // LOAD PRODUCT FOR EDIT
   useEffect(() => {
-    async function load() {
-      if (id) {
-        const data = await getProductById(id);
-        if (data) setForm(data);
+    if (!id) return;
+
+    async function loadProduct() {
+      const data = await getProductById(id);
+      if (data) {
+        setForm({
+          manufacturer: data.manufacturer,
+          engine_type: data.engine_type,
+          price: data.price,
+          category: data.category,
+          image: data.image
+        });
       }
     }
-    load();
+
+    loadProduct();
   }, [id]);
 
+  // Handle input
+  function handleChange(e) {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  // Upload Image (Base64)
+  function handleImageUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((prev) => ({ ...prev, image: reader.result }));
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // SUBMIT
   async function handleSubmit(e) {
     e.preventDefault();
     setLoading(true);
 
-    if (id) {
-      await updateProduct(id, form);
-      alert("Produk berhasil diperbarui!");
-    } else {
-      await createProduct(form);
-      alert("Produk berhasil ditambahkan!");
+    // HANYA KIRIM FIELD VALID
+    const payload = {
+      manufacturer: form.manufacturer,
+      engine_type: form.engine_type,
+      price: Number(form.price),
+      category: form.category,
+      image: form.image
+    };
+
+    const saved = id
+      ? await updateProduct(id, payload)
+      : await createProduct(payload);
+
+    setLoading(false);
+
+    if (!saved) {
+      alert("Gagal menyimpan produk!");
+      return;
     }
 
-    navigate("/catalog");
-  }
-
-  async function handleImageUpload(e) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const url = await uploadImage(file);
-    setForm((prev) => ({ ...prev, image: url }));
+    alert("Produk berhasil disimpan!");
+    navigate("/catalog?refresh=" + Date.now());
   }
 
   return (
     <div className="page">
-      <main className="page-content addedit-wrapper">
+      <main className="page-content">
 
-        {/* Admin Panel Notice */}
-        <div className="admin-panel">
-          <strong>Admin Panel:</strong> Fill in the product details below
-        </div>
+        <div className="addedit-wrapper">
 
-        <form onSubmit={handleSubmit} className="addedit-card">
-
-          {/* ===== PRODUCT IMAGE ===== */}
-          <label className="form-label">Product Image</label>
-          <div className="upload-box" onClick={() => document.getElementById("imgInput").click()}>
-            {form.image ? (
-              <img src={form.image} alt="preview" className="upload-preview" />
-            ) : (
-              <div className="upload-placeholder">
-                <p>📷 Click untuk mengunggah gambar</p>
-                <small>PNG, JPG up to 10MB</small>
-              </div>
-            )}
+          <div className="admin-panel">
+            <b>Admin Panel:</b> Isi data produk dengan benar
           </div>
 
-          <input
-            type="file"
-            id="imgInput"
-            accept="image/*"
-            onChange={handleImageUpload}
-            style={{ display: "none" }}
-          />
+          <form className="addedit-card" onSubmit={handleSubmit}>
 
-          {/* ===== FORM FIELDS ===== */}
-          <div className="form-grid">
-
-            {/* PRODUCT NAME */}
-            <div className="form-group full">
-              <label className="form-label">Nama Produk *</label>
-              <input
-                type="text"
-                placeholder="e.g., Turbocharger Assembly"
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                required
-              />
+            {/* Upload Image */}
+            <label className="form-label">Product Image</label>
+            <div
+              className="upload-box"
+              onClick={() => document.getElementById("imgUpload").click()}
+            >
+              {form.image ? (
+                <img src={form.image} className="upload-preview" />
+              ) : (
+                <div className="upload-placeholder">
+                  <p>Klik untuk upload gambar</p>
+                  <small>PNG, JPG max 10MB</small>
+                </div>
+              )}
             </div>
 
-            {/* MANUFACTURER */}
-            <div className="form-group">
-              <label className="form-label">Pembuat *</label>
-              <input
-                type="text"
-                placeholder="e.g., Toyota, Boeing"
-                value={form.manufacturer}
-                onChange={(e) => setForm({ ...form, manufacturer: e.target.value })}
-                required
-              />
-            </div>
+            <input
+              id="imgUpload"
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={handleImageUpload}
+            />
 
-            {/* ENGINE TYPE */}
-            <div className="form-group">
-              <label className="form-label">Tipe Mesin *</label>
-              <input
-                type="text"
-                placeholder="e.g., V8, Diesel, Jet"
-                value={form.engine_type}
-                onChange={(e) => setForm({ ...form, engine_type: e.target.value })}
-                required
-              />
-            </div>
+            {/* FORM INPUTS */}
+            <div className="form-grid">
 
-            {/* PRICE */}
-            <div className="form-group">
-              <label className="form-label">Harga (Rp) *</label>
-              <input
-                type="number"
-                placeholder="0"
-                value={form.price}
-                onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                required
-              />
-            </div>
-
-            {/* CATEGORY */}
-            <div className="form-group">
-              <label className="form-label">Kategori *</label>
-              <select
-                value={form.category}
-                onChange={(e) => setForm({ ...form, category: e.target.value })}
-              >
-                <option value="Mobil">Mobil</option>
-                <option value="Bus">Bus</option>
-                <option value="Kereta">Kereta</option>
-                <option value="Pesawat">Pesawat</option>
-              </select>
-            </div>
-
-            {/* PART NUMBER */}
-            <div className="form-group">
-              <label className="form-label">Part No.</label>
-              <input
-                type="text"
-                placeholder="e.g., PN-12345"
-                value={form.part_number}
-                onChange={(e) => setForm({ ...form, part_number: e.target.value })}
-              />
-            </div>
-
-            {/* STOCK STATUS */}
-            <div className="form-group">
-              <label className="form-label">Status Stok</label>
-              <div className="checkbox-row">
+              <div className="form-group">
+                <label className="form-label">Manufacturer *</label>
                 <input
-                  type="checkbox"
-                  checked={form.stock_status}
-                  onChange={(e) =>
-                    setForm({ ...form, stock_status: e.target.checked })
-                  }
+                  name="manufacturer"
+                  value={form.manufacturer}
+                  onChange={handleChange}
+                  required
                 />
-                <span>In Stock</span>
               </div>
+
+              <div className="form-group">
+                <label className="form-label">Engine Type *</label>
+                <input
+                  name="engine_type"
+                  value={form.engine_type}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Price (IDR) *</label>
+                <input
+                  type="number"
+                  name="price"
+                  value={form.price}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Category *</label>
+                <select name="category" value={form.category} onChange={handleChange}>
+                  <option value="Mobil">Mobil</option>
+                  <option value="Bus">Bus</option>
+                  <option value="Kereta">Kereta</option>
+                  <option value="Pesawat">Pesawat</option>
+                </select>
+              </div>
+
             </div>
 
-            {/* DESCRIPTION */}
-            <div className="form-group full">
-              <label className="form-label">Deskripsi *</label>
-              <textarea
-                rows="4"
-                placeholder="Berikan deskripsi lengkap mengenai produk..."
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                required
-              ></textarea>
-            </div>
-          </div>
+            <button className="save-btn" type="submit" disabled={loading}>
+              {loading ? "Saving..." : id ? "Save Changes" : "Add Product"}
+            </button>
 
-          {/* SUBMIT BUTTON */}
-          <button className="save-btn" disabled={loading}>
-            {loading ? "Menyimpan..." : "Simpan Produk"}
-          </button>
+          </form>
 
-        </form>
+        </div>
       </main>
     </div>
   );
